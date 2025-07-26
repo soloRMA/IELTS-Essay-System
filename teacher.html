@@ -49,6 +49,10 @@
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
+            transition: background 0.3s;
+        }
+        .password-screen button:hover {
+            background: #1d4ed8;
         }
         .dashboard {
             display: none;
@@ -57,7 +61,10 @@
         .controls {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
         }
         .essay-card {
             background: white;
@@ -83,6 +90,19 @@
             text-align: center;
             padding: 40px;
             color: #64748b;
+        }
+        #downloadBtn {
+            padding: 10px 20px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #downloadBtn:hover {
+            background: #059669;
         }
     </style>
 </head>
@@ -134,9 +154,10 @@
             }
         });
         
-        // Load saved essays
+        // Load saved essays from localStorage
         function loadEssays() {
-            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
+            // Get essays from localStorage or initialize empty array
+            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || [];
             
             if (essays.length === 0) {
                 essaysContainer.innerHTML = `
@@ -148,8 +169,10 @@
                 return;
             }
             
+            // Clear existing content
             essaysContainer.innerHTML = '';
             
+            // Display each essay
             essays.forEach(essay => {
                 const essayElement = document.createElement('div');
                 essayElement.className = 'essay-card';
@@ -165,9 +188,16 @@
             });
         }
         
-        // Download essays
+        // Download essays as text file
         downloadBtn.addEventListener('click', () => {
+            // Get essays from localStorage
             const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
+            
+            if (essays.length === 0) {
+                alert("No essays to download!");
+                return;
+            }
+            
             let content = "IELTS Essay Submissions\n\n";
             
             essays.forEach((essay, index) => {
@@ -179,6 +209,7 @@
                 content += "--------------------------------\n\n";
             });
             
+            // Create and trigger download
             const blob = new Blob([content], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
