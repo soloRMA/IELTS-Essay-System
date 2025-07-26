@@ -61,6 +61,22 @@
             border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
         }
+        .student-info {
+            margin-bottom: 20px;
+        }
+        .student-info input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .student-info input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
         .timer-container {
             display: flex;
             justify-content: space-between;
@@ -74,6 +90,8 @@
             background: #dbeafe;
             padding: 8px 15px;
             border-radius: 6px;
+            min-width: 100px;
+            text-align: center;
         }
         .task-buttons {
             display: flex;
@@ -172,6 +190,13 @@
             background: #fee2e2;
             color: #dc2626;
         }
+        .task-info {
+            font-weight: 600;
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -184,18 +209,31 @@
             <p><strong>Important:</strong> 
                 <ul>
                     <li>Your work will be automatically erased if you leave this page</li>
-                    <li>Word count must be between 250-400 words</li>
+                    <li>Word count: Task 1 (≥150 words), Task 2 (≥250 words)</li>
                     <li>Select your task type to start the timer</li>
                 </ul>
             </p>
         </div>
         
         <div class="form-group">
+            <div class="student-info">
+                <label for="studentName">Your Name/Student ID:</label>
+                <input 
+                    type="text" 
+                    id="studentName" 
+                    placeholder="Enter your full name or student ID"
+                    spellcheck="false"
+                >
+            </div>
+            
+            <div class="task-info" id="taskInfo">Select task below</div>
+            
+            <div class="task-buttons" id="taskButtons">
+                <button id="task1Btn" class="task-btn">Task 1 (20 min)</button>
+                <button id="task2Btn" class="task-btn">Task 2 (40 min)</button>
+            </div>
+            
             <div class="timer-container">
-                <div class="task-buttons">
-                    <button id="task1Btn" class="task-btn">Task 1 (20 min)</button>
-                    <button id="task2Btn" class="task-btn">Task 2 (40 min)</button>
-                </div>
                 <div class="timer" id="timer">00:00</div>
             </div>
             
@@ -236,39 +274,60 @@
         // DOM Elements
         const task1Btn = document.getElementById('task1Btn');
         const task2Btn = document.getElementById('task2Btn');
+        const taskButtons = document.getElementById('taskButtons');
+        const taskInfo = document.getElementById('taskInfo');
         const timerDisplay = document.getElementById('timer');
         const essayTextarea = document.getElementById('essay');
         const wordCount = document.getElementById('count');
         const resetBtn = document.getElementById('resetBtn');
         const submitBtn = document.getElementById('submitBtn');
         const statusMessage = document.getElementById('statusMessage');
+        const studentNameInput = document.getElementById('studentName');
         
         // Timer variables
         let countdown;
         let secondsRemaining;
         let taskActive = false;
         let taskType = "";
+        let minWords = 0;
         
         // Start Task 1 (20 minutes)
         task1Btn.addEventListener('click', () => {
-            startTimer(20 * 60);
-            taskType = "Task 1";
-            updateStatus(`Task 1 started! You have 20 minutes`, 'status-success');
+            if (!studentNameInput.value.trim()) {
+                updateStatus("⚠️ Please enter your name before starting", 'status-warning');
+                studentNameInput.focus();
+                return;
+            }
+            startTimer(20 * 60, "Task 1", 150);
+            updateStatus(`Task 1 started! You have 20 minutes (Minimum: 150 words)`, 'status-success');
         });
         
         // Start Task 2 (40 minutes)
         task2Btn.addEventListener('click', () => {
-            startTimer(40 * 60);
-            taskType = "Task 2";
-            updateStatus(`Task 2 started! You have 40 minutes`, 'status-success');
+            if (!studentNameInput.value.trim()) {
+                updateStatus("⚠️ Please enter your name before starting", 'status-warning');
+                studentNameInput.focus();
+                return;
+            }
+            startTimer(40 * 60, "Task 2", 250);
+            updateStatus(`Task 2 started! You have 40 minutes (Minimum: 250 words)`, 'status-success');
         });
         
         // Start timer function
-        function startTimer(seconds) {
+        function startTimer(seconds, type, min) {
             // Clear any existing timer
             if (countdown) {
                 clearInterval(countdown);
             }
+            
+            // Set task-specific values
+            taskType = type;
+            minWords = min;
+            
+            // Hide task buttons and show task info
+            taskButtons.style.display = 'none';
+            taskInfo.textContent = `${type} in progress - Timer running`;
+            taskInfo.style.color = '#2563eb';
             
             // Reset interface
             resetInterface();
@@ -296,6 +355,8 @@
                 // Change color when time is running low
                 if (minutes < 2) {
                     timerDisplay.style.color = '#dc2626';
+                    taskInfo.style.color = '#dc2626';
+                    taskInfo.textContent = `${type} - ${minutes}:${seconds.toString().padStart(2, '0')} remaining!`;
                 }
                 
                 // Timer end
@@ -304,6 +365,9 @@
                     saveEssay();
                     alert("Time's up! Essay submitted.");
                     resetInterface();
+                    taskButtons.style.display = 'flex'; // Show buttons again
+                    taskInfo.textContent = 'Select task below';
+                    taskInfo.style.color = '#2563eb';
                 }
             }, 1000);
         }
@@ -321,13 +385,13 @@
             wordCount.textContent = count;
             
             // Add warning if below minimum
-            if(count > 0 && count < 250) {
+            if(count > 0 && count < minWords) {
                 wordCount.classList.add('counter-warning');
-                updateStatus(`⚠️ Minimum 250 words required (currently ${count} words)`, 'status-warning');
+                updateStatus(`⚠️ Minimum ${minWords} words required (currently ${count} words)`, 'status-warning');
             } else {
                 wordCount.classList.remove('counter-warning');
                 
-                if (count >= 250) {
+                if (count >= minWords) {
                     updateStatus(`✓ Word count: ${count} (minimum reached)`, 'status-success');
                 }
             }
@@ -344,6 +408,7 @@
         // Save essay function
         function saveEssay() {
             const essayData = {
+                studentName: studentNameInput.value.trim(),
                 content: essayTextarea.value,
                 words: wordCount.textContent,
                 timestamp: new Date().toISOString(),
@@ -369,22 +434,31 @@
             essayTextarea.value = "";
             essayTextarea.disabled = true;
             submitBtn.disabled = true;
-            taskActive = false;
             updateWordCounter();
         }
         
-        // Submit button handler - FIXED VERSION
+        // Submit button handler
         submitBtn.addEventListener('click', () => {
+            // Validate student name
+            if (!studentNameInput.value.trim()) {
+                updateStatus("⚠️ Please enter your name before submitting", 'status-warning');
+                studentNameInput.focus();
+                return;
+            }
+            
             // Get current word count as number
             const currentWordCount = parseInt(wordCount.textContent, 10);
             
-            if (currentWordCount < 250) {
-                const shouldSubmit = confirm(`Your essay is only ${currentWordCount} words (minimum 250). Submit anyway?`);
+            if (currentWordCount < minWords) {
+                const shouldSubmit = confirm(`Your essay is only ${currentWordCount} words (minimum ${minWords}). Submit anyway?`);
                 if (!shouldSubmit) return;
             }
             
             if (saveEssay()) {
                 resetInterface();
+                taskButtons.style.display = 'flex'; // Show buttons again
+                taskInfo.textContent = 'Select task below';
+                taskInfo.style.color = '#2563eb';
                 updateStatus('Essay submitted successfully!', 'status-success');
             } else {
                 updateStatus('Error saving essay!', 'status-error');
