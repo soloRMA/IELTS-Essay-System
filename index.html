@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IELTS Essay System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .timer-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .timer-btn {
+            flex: 1;
+            padding: 15px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .timer-btn:hover {
+            background: #1d4ed8;
+        }
+        .timer-display {
+            font-size: 32px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        #essay {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        #essay:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        .word-counter {
+            text-align: right;
+            margin-top: 10px;
+            color: #64748b;
+            font-size: 14px;
+        }
+        #submitBtn {
+            width: 100%;
+            padding: 15px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #submitBtn:hover {
+            background: #059669;
+        }
+        #submitBtn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+        .warning {
+            color: #dc2626;
+            font-weight: 500;
+            text-align: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IELTS Writing Practice</h1>
+        
+        <div class="timer-buttons">
+            <button id="task1Btn" class="timer-btn">Start Task 1 (20 min)</button>
+            <button id="task2Btn" class="timer-btn">Start Task 2 (40 min)</button>
+        </div>
+        
+        <div class="timer-display" id="timer">00:00</div>
+        
+        <textarea 
+            id="essay" 
+            placeholder="Begin writing your essay here..." 
+            spellcheck="false"
+            disabled
+        ></textarea>
+        
+        <div class="word-counter">
+            Word count: <span id="wordCount">0</span>
+        </div>
+        
+        <button id="submitBtn" disabled>Submit Essay</button>
+        
+        <div class="warning" id="warningText">
+            ⚠️ Timer not started - Select task above
+        </div>
+    </div>
+
+    <script>
+        // DOM is fully loaded now
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elements
+            const task1Btn = document.getElementById('task1Btn');
+            const task2Btn = document.getElementById('task2Btn');
+            const timerDisplay = document.getElementById('timer');
+            const essayInput = document.getElementById('essay');
+            const wordCount = document.getElementById('wordCount');
+            const submitBtn = document.getElementById('submitBtn');
+            const warningText = document.getElementById('warningText');
+            
+            // Timer variables
+            let countdown;
+            let secondsRemaining;
+            let taskActive = false;
+            
+            // Start Task 1 (20 minutes)
+            task1Btn.addEventListener('click', () => startTimer(20 * 60));
+            
+            // Start Task 2 (40 minutes)
+            task2Btn.addEventListener('click', () => startTimer(40 * 60));
+            
+            // Start timer function
+            function startTimer(seconds) {
+                clearInterval(countdown);
+                secondsRemaining = seconds;
+                taskActive = true;
+                essayInput.disabled = false;
+                submitBtn.disabled = false;
+                warningText.style.display = 'none';
+                
+                // Enable textarea
+                essayInput.value = '';
+                essayInput.focus();
+                updateWordCount();
+                
+                // Start countdown
+                countdown = setInterval(() => {
+                    secondsRemaining--;
+                    
+                    // Format time display
+                    const minutes = Math.floor(secondsRemaining / 60);
+                    const seconds = secondsRemaining % 60;
+                    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Timer end
+                    if (secondsRemaining <= 0) {
+                        clearInterval(countdown);
+                        saveEssay();
+                        alert("Time's up! Essay submitted.");
+                        resetInterface();
+                    }
+                }, 1000);
+            }
+            
+            // Word counter
+            essayInput.addEventListener('input', updateWordCount);
+            function updateWordCount() {
+                const text = essayInput.value.trim();
+                const count = text === '' ? 0 : text.split(/\s+/).length;
+                wordCount.textContent = count;
+                
+                if (count > 0 && count < 250) {
+                    wordCount.style.color = '#dc2626';
+                    wordCount.style.fontWeight = 'bold';
+                } else {
+                    wordCount.style.color = '#64748b';
+                    wordCount.style.fontWeight = 'normal';
+                }
+            }
+            
+            // Save essay function
+            function saveEssay() {
+                const essayData = {
+                    content: essayInput.value,
+                    words: wordCount.textContent,
+                    timestamp: new Date().toISOString(),
+                    taskType: secondsRemaining === 20 * 60 ? "Task 1" : "Task 2"
+                };
+                
+                // Save to localStorage temporarily
+                let essays = JSON.parse(localStorage.getItem('ieltsEssays') || [];
+                essays.push(essayData);
+                localStorage.setItem('ieltsEssays', JSON.stringify(essays));
+                
+                // Show success message
+                warningText.textContent = "✅ Essay saved successfully!";
+                warningText.style.color = '#10b981';
+                warningText.style.display = 'block';
+            }
+            
+            // Submit button
+            submitBtn.addEventListener('click', () => {
+                if (essayInput.value.trim() === '') {
+                    warningText.textContent = "⚠️ Essay cannot be empty!";
+                    warningText.style.color = '#dc2626';
+                    warningText.style.display = 'block';
+                    return;
+                }
+                
+                saveEssay();
+                resetInterface();
+            });
+            
+            // Reset interface
+            function resetInterface() {
+                clearInterval(countdown);
+                timerDisplay.textContent = "00:00";
+                essayInput.value = "";
+                essayInput.disabled = true;
+                submitBtn.disabled = true;
+                taskActive = false;
+                updateWordCount();
+            }
+            
+            // Warn before leaving
+            window.addEventListener('beforeunload', (e) => {
+                if (taskActive && essayInput.value.trim() !== '') {
+                    e.preventDefault();
+                    e.returnValue = '';
+                    return "Your essay will be lost if you leave this page. Are you sure?";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
