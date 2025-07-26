@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+        .password-screen { text-align: center; margin-top: 100px; }
+        .dashboard { display: none; }
+        .essay { border: 1px solid #ddd; padding: 15px; margin: 10px 0; }
+        button { padding: 10px 15px; background: #2563eb; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="password-screen" id="passwordScreen">
+        <h2>Teacher Dashboard</h2>
+        <input type="password" id="passwordInput" placeholder="Enter password">
+        <button id="loginBtn">Access Essays</button>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <h1>Submitted Essays</h1>
+        <button id="downloadBtn">Download All Essays</button>
+        <div id="essaysContainer"></div>
+    </div>
+
+    <script>
+        // Password protection
+        const CORRECT_PASSWORD = "IELTS2024"; // Change to your password
+        const passwordScreen = document.getElementById('passwordScreen');
+        const dashboard = document.getElementById('dashboard');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        loginBtn.addEventListener('click', () => {
+            if (document.getElementById('passwordInput').value === CORRECT_PASSWORD) {
+                passwordScreen.style.display = 'none';
+                dashboard.style.display = 'block';
+                loadEssays();
+            } else {
+                alert("Incorrect password");
+            }
+        });
+        
+        // Load saved essays
+        function loadEssays() {
+            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || [];
+            const container = document.getElementById('essaysContainer');
+            container.innerHTML = '';
+            
+            essays.forEach(essay => {
+                const essayElement = document.createElement('div');
+                essayElement.className = 'essay';
+                essayElement.innerHTML = `
+                    <p><strong>Date:</strong> ${new Date(essay.timestamp).toLocaleString()}</p>
+                    <p><strong>Task:</strong> ${essay.taskType}</p>
+                    <p><strong>Words:</strong> ${essay.words}</p>
+                    <div>${essay.content.replace(/\n/g, '<br>')}</div>
+                `;
+                container.appendChild(essayElement);
+            });
+            
+            if (essays.length === 0) {
+                container.innerHTML = '<p>No essays submitted yet.</p>';
+            }
+        }
+        
+        // Download essays
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
+            let content = "IELTS Essay Submissions\n\n";
+            
+            essays.forEach(essay => {
+                content += `Date: ${new Date(essay.timestamp).toLocaleString()}\n`;
+                content += `Task: ${essay.taskType}\n`;
+                content += `Word Count: ${essay.words}\n`;
+                content += `Essay:\n${essay.content}\n\n`;
+                content += "--------------------------------\n\n";
+            });
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ielts-essays-${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+        
+        // Auto-clear old essays (keeps 30 days)
+        function clearOldEssays() {
+            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
+            const now = new Date();
+            const recentEssays = essays.filter(essay => {
+                const essayDate = new Date(essay.timestamp);
+                const diffDays = (now - essayDate) / (1000 * 60 * 60 * 24);
+                return diffDays <= 30;
+            });
+            
+            localStorage.setItem('ieltsEssays', JSON.stringify(recentEssays));
+        }
+        
+        // Run on load
+        clearOldEssays();
+    </script>
+</body>
+</html>
