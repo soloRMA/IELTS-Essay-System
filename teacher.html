@@ -1,70 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>IELTS Teacher Dashboard</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Teacher Dashboard</title>
     <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1000px;
-            margin: 0 auto;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            min-height: 100vh;
             padding: 20px;
-            background: #f8f9fa;
+            margin: 0;
         }
         .container {
+            max-width: 1000px;
+            margin: 40px auto;
             background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        h1 {
-            color: #2563eb;
-            text-align: center;
-            margin-bottom: 30px;
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 25px 40px;
         }
         .password-screen {
+            padding: 40px;
             text-align: center;
-            padding: 40px 20px;
         }
-        #passwordInput {
+        .password-screen input {
             padding: 12px 20px;
             width: 300px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid #cbd5e1;
             border-radius: 8px;
             font-size: 16px;
             margin: 15px 0;
         }
-        #loginBtn {
+        .password-screen button {
             padding: 12px 30px;
             background: #2563eb;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-        #loginBtn:hover {
-            background: #1d4ed8;
         }
         .dashboard {
             display: none;
+            padding: 30px 40px;
         }
         .controls {
             display: flex;
             justify-content: space-between;
             margin-bottom: 25px;
-        }
-        #downloadBtn {
-            padding: 10px 20px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
         }
         .essay-card {
             background: white;
@@ -95,105 +88,105 @@
 </head>
 <body>
     <div class="container">
-        <div class="password-screen" id="passwordScreen">
+        <header>
             <h1>IELTS Teacher Dashboard</h1>
+        </header>
+        
+        <div class="password-screen" id="passwordScreen">
+            <h2>Access Required</h2>
             <input type="password" id="passwordInput" placeholder="Enter your secure password">
             <br>
             <button id="loginBtn">Access Essays</button>
         </div>
 
         <div class="dashboard" id="dashboard">
-            <h1>Submitted Essays</h1>
-            
             <div class="controls">
-                <div>
-                    <strong id="essayCount">0 essays</strong>
-                </div>
+                <h2>Submitted Essays</h2>
                 <button id="downloadBtn">Download All Essays</button>
             </div>
             
             <div id="essaysContainer">
-                <!-- Essays will appear here -->
+                <div class="empty-state">
+                    <h3>No essays submitted yet</h3>
+                    <p>Student essays will appear here once submitted</p>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Password protection
-            const CORRECT_PASSWORD = "IELTS2024"; // CHANGE THIS TO YOUR PASSWORD
-            const passwordScreen = document.getElementById('passwordScreen');
-            const dashboard = document.getElementById('dashboard');
-            const loginBtn = document.getElementById('loginBtn');
-            const essayCount = document.getElementById('essayCount');
+        // Password protection
+        const CORRECT_PASSWORD = "IELTS2024"; // CHANGE THIS TO YOUR PASSWORD
+        const passwordScreen = document.getElementById('passwordScreen');
+        const dashboard = document.getElementById('dashboard');
+        const loginBtn = document.getElementById('loginBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const essaysContainer = document.getElementById('essaysContainer');
+        
+        loginBtn.addEventListener('click', () => {
+            const password = document.getElementById('passwordInput').value;
+            if (password === CORRECT_PASSWORD) {
+                passwordScreen.style.display = 'none';
+                dashboard.style.display = 'block';
+                loadEssays();
+            } else {
+                alert("Incorrect password. Please try again.");
+            }
+        });
+        
+        // Load saved essays
+        function loadEssays() {
+            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
             
-            loginBtn.addEventListener('click', () => {
-                const password = document.getElementById('passwordInput').value;
-                if (password === CORRECT_PASSWORD) {
-                    passwordScreen.style.display = 'none';
-                    dashboard.style.display = 'block';
-                    loadEssays();
-                } else {
-                    alert("Incorrect password. Please try again.");
-                }
-            });
-            
-            // Load saved essays
-            function loadEssays() {
-                const essays = JSON.parse(localStorage.getItem('ieltsEssays') || [];
-                const container = document.getElementById('essaysContainer');
-                container.innerHTML = '';
-                
-                essayCount.textContent = `${essays.length} essay${essays.length !== 1 ? 's' : ''}`;
-                
-                if (essays.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <h3>No essays submitted yet</h3>
-                            <p>Student essays will appear here once submitted</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                essays.forEach(essay => {
-                    const essayElement = document.createElement('div');
-                    essayElement.className = 'essay-card';
-                    essayElement.innerHTML = `
-                        <div class="essay-meta">
-                            <div><strong>Date:</strong> ${new Date(essay.timestamp).toLocaleString()}</div>
-                            <div><strong>Task:</strong> ${essay.taskType}</div>
-                            <div><strong>Words:</strong> ${essay.words}</div>
-                        </div>
-                        <div class="essay-content">${essay.content}</div>
-                    `;
-                    container.appendChild(essayElement);
-                });
+            if (essays.length === 0) {
+                essaysContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No essays submitted yet</h3>
+                        <p>Student essays will appear here once submitted</p>
+                    </div>
+                `;
+                return;
             }
             
-            // Download essays
-            document.getElementById('downloadBtn').addEventListener('click', () => {
-                const essays = JSON.parse(localStorage.getItem('ieltsEssays') || [];
-                let content = "IELTS Essay Submissions\n\n";
-                
-                essays.forEach((essay, index) => {
-                    content += `Essay #${index + 1}\n`;
-                    content += `Date: ${new Date(essay.timestamp).toLocaleString()}\n`;
-                    content += `Task: ${essay.taskType}\n`;
-                    content += `Word Count: ${essay.words}\n\n`;
-                    content += `${essay.content}\n\n`;
-                    content += "--------------------------------\n\n";
-                });
-                
-                const blob = new Blob([content], { type: 'text/plain' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `ielts-essays-${new Date().toISOString().slice(0,10)}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            essaysContainer.innerHTML = '';
+            
+            essays.forEach(essay => {
+                const essayElement = document.createElement('div');
+                essayElement.className = 'essay-card';
+                essayElement.innerHTML = `
+                    <div class="essay-meta">
+                        <div><strong>Date:</strong> ${new Date(essay.timestamp).toLocaleString()}</div>
+                        <div><strong>Task:</strong> ${essay.taskType}</div>
+                        <div><strong>Words:</strong> ${essay.words}</div>
+                    </div>
+                    <div class="essay-content">${essay.content}</div>
+                `;
+                essaysContainer.appendChild(essayElement);
             });
+        }
+        
+        // Download essays
+        downloadBtn.addEventListener('click', () => {
+            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
+            let content = "IELTS Essay Submissions\n\n";
+            
+            essays.forEach((essay, index) => {
+                content += `Essay #${index + 1}\n`;
+                content += `Date: ${new Date(essay.timestamp).toLocaleString()}\n`;
+                content += `Task: ${essay.taskType}\n`;
+                content += `Word Count: ${essay.words}\n\n`;
+                content += `${essay.content}\n\n`;
+                content += "--------------------------------\n\n";
+            });
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ielts-essays-${new Date().toISOString().slice(0,10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         });
     </script>
 </body>
