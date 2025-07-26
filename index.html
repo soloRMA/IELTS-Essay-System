@@ -5,98 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
-            background: #f8f9fa;
-        }
-        .container {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        h1 {
-            color: #2563eb;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .timer-buttons {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .timer-btn {
-            flex: 1;
-            padding: 15px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .timer-btn:hover {
-            background: #1d4ed8;
-        }
-        .timer-display {
-            font-size: 32px;
-            text-align: center;
-            margin: 20px 0;
-            font-weight: bold;
-            color: #2563eb;
-        }
-        #essay {
-            width: 100%;
-            min-height: 300px;
-            padding: 15px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            line-height: 1.6;
-            resize: vertical;
-        }
-        #essay:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-        }
-        .word-counter {
-            text-align: right;
-            margin-top: 10px;
-            color: #64748b;
-            font-size: 14px;
-        }
-        #submitBtn {
-            width: 100%;
-            padding: 15px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            margin-top: 20px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        #submitBtn:hover {
-            background: #059669;
-        }
-        #submitBtn:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-        }
-        .warning {
-            color: #dc2626;
-            font-weight: 500;
-            text-align: center;
-            margin: 10px 0;
-        }
+        /* ... (keep all your existing styles) ... */
     </style>
 </head>
 <body>
@@ -126,11 +35,28 @@
         <div class="warning" id="warningText">
             ⚠️ Timer not started - Select task above
         </div>
+        
+        <!-- Debug panel (remove after testing) -->
+        <div id="debugPanel" style="margin-top: 20px; color: #666; font-size: 14px;">
+            <h3>Debug Information</h3>
+            <div id="debugInfo"></div>
+        </div>
     </div>
 
     <script>
+        // Debugging function
+        function debugLog(message) {
+            const debugInfo = document.getElementById('debugInfo');
+            if (debugInfo) {
+                debugInfo.innerHTML += `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+            }
+            console.log(message);
+        }
+
         // DOM is fully loaded now
         document.addEventListener('DOMContentLoaded', () => {
+            debugLog("DOM fully loaded");
+            
             // Elements
             const task1Btn = document.getElementById('task1Btn');
             const task2Btn = document.getElementById('task2Btn');
@@ -140,42 +66,69 @@
             const submitBtn = document.getElementById('submitBtn');
             const warningText = document.getElementById('warningText');
             
+            // Check if elements exist
+            debugLog(`Task1 button: ${!!task1Btn}`);
+            debugLog(`Essay input: ${!!essayInput}`);
+            
             // Timer variables
             let countdown;
             let secondsRemaining;
             let taskActive = false;
             
             // Start Task 1 (20 minutes)
-            task1Btn.addEventListener('click', () => startTimer(20 * 60));
+            if (task1Btn) {
+                task1Btn.addEventListener('click', () => {
+                    debugLog("Task 1 button clicked");
+                    startTimer(20 * 60);
+                });
+            }
             
             // Start Task 2 (40 minutes)
-            task2Btn.addEventListener('click', () => startTimer(40 * 60));
+            if (task2Btn) {
+                task2Btn.addEventListener('click', () => {
+                    debugLog("Task 2 button clicked");
+                    startTimer(40 * 60);
+                });
+            }
             
             // Start timer function
             function startTimer(seconds) {
-                clearInterval(countdown);
+                debugLog(`Starting timer for ${seconds} seconds`);
+                
+                // Clear any existing timer
+                if (countdown) {
+                    clearInterval(countdown);
+                    countdown = null;
+                }
+                
                 secondsRemaining = seconds;
                 taskActive = true;
-                essayInput.disabled = false;
-                submitBtn.disabled = false;
-                warningText.style.display = 'none';
                 
                 // Enable textarea
-                essayInput.value = '';
-                essayInput.focus();
-                updateWordCount();
+                if (essayInput) {
+                    essayInput.disabled = false;
+                    essayInput.value = '';
+                    essayInput.focus();
+                    updateWordCount();
+                }
+                
+                if (submitBtn) submitBtn.disabled = false;
+                if (warningText) warningText.style.display = 'none';
+                
+                // Update timer immediately
+                updateTimerDisplay();
                 
                 // Start countdown
                 countdown = setInterval(() => {
                     secondsRemaining--;
+                    debugLog(`Seconds remaining: ${secondsRemaining}`);
                     
-                    // Format time display
-                    const minutes = Math.floor(secondsRemaining / 60);
-                    const seconds = secondsRemaining % 60;
-                    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    // Update display
+                    updateTimerDisplay();
                     
                     // Timer end
                     if (secondsRemaining <= 0) {
+                        debugLog("Timer reached zero");
                         clearInterval(countdown);
                         saveEssay();
                         alert("Time's up! Essay submitted.");
@@ -184,9 +137,26 @@
                 }, 1000);
             }
             
+            // Update timer display
+            function updateTimerDisplay() {
+                if (!timerDisplay) return;
+                
+                const minutes = Math.floor(secondsRemaining / 60);
+                const seconds = secondsRemaining % 60;
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change color when time is running out
+                if (minutes < 2) {
+                    timerDisplay.style.color = '#dc2626';
+                } else {
+                    timerDisplay.style.color = '#2563eb';
+                }
+            }
+            
             // Word counter
-            essayInput.addEventListener('input', updateWordCount);
             function updateWordCount() {
+                if (!essayInput || !wordCount) return;
+                
                 const text = essayInput.value.trim();
                 const count = text === '' ? 0 : text.split(/\s+/).length;
                 wordCount.textContent = count;
@@ -200,8 +170,16 @@
                 }
             }
             
+            if (essayInput) {
+                essayInput.addEventListener('input', updateWordCount);
+            }
+            
             // Save essay function
             function saveEssay() {
+                debugLog("Saving essay");
+                
+                if (!essayInput || !wordCount) return;
+                
                 const essayData = {
                     content: essayInput.value,
                     words: wordCount.textContent,
@@ -215,43 +193,66 @@
                 localStorage.setItem('ieltsEssays', JSON.stringify(essays));
                 
                 // Show success message
-                warningText.textContent = "✅ Essay saved successfully!";
-                warningText.style.color = '#10b981';
-                warningText.style.display = 'block';
+                if (warningText) {
+                    warningText.textContent = "✅ Essay saved successfully!";
+                    warningText.style.color = '#10b981';
+                    warningText.style.display = 'block';
+                }
             }
             
             // Submit button
-            submitBtn.addEventListener('click', () => {
-                if (essayInput.value.trim() === '') {
-                    warningText.textContent = "⚠️ Essay cannot be empty!";
-                    warningText.style.color = '#dc2626';
-                    warningText.style.display = 'block';
-                    return;
-                }
-                
-                saveEssay();
-                resetInterface();
-            });
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    if (essayInput && essayInput.value.trim() === '') {
+                        if (warningText) {
+                            warningText.textContent = "⚠️ Essay cannot be empty!";
+                            warningText.style.color = '#dc2626';
+                            warningText.style.display = 'block';
+                        }
+                        return;
+                    }
+                    
+                    saveEssay();
+                    resetInterface();
+                });
+            }
             
             // Reset interface
             function resetInterface() {
-                clearInterval(countdown);
-                timerDisplay.textContent = "00:00";
-                essayInput.value = "";
-                essayInput.disabled = true;
-                submitBtn.disabled = true;
+                debugLog("Resetting interface");
+                
+                if (countdown) {
+                    clearInterval(countdown);
+                    countdown = null;
+                }
+                
+                if (timerDisplay) {
+                    timerDisplay.textContent = "00:00";
+                    timerDisplay.style.color = '#2563eb';
+                }
+                
+                if (essayInput) {
+                    essayInput.value = "";
+                    essayInput.disabled = true;
+                }
+                
+                if (submitBtn) submitBtn.disabled = true;
                 taskActive = false;
                 updateWordCount();
             }
             
             // Warn before leaving
             window.addEventListener('beforeunload', (e) => {
-                if (taskActive && essayInput.value.trim() !== '') {
+                if (taskActive && essayInput && essayInput.value.trim() !== '') {
                     e.preventDefault();
                     e.returnValue = '';
                     return "Your essay will be lost if you leave this page. Are you sure?";
                 }
             });
+            
+            // Initialize
+            updateWordCount();
+            debugLog("Initialization complete");
         });
     </script>
 </body>
