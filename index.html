@@ -168,6 +168,10 @@
             background: #d1fae5;
             color: #059669;
         }
+        .status-error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -347,16 +351,19 @@
             };
             
             // Save to localStorage
-            let essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
+            let essays = JSON.parse(localStorage.getItem('ieltsEssays') || "[]");
             essays.push(essayData);
             localStorage.setItem('ieltsEssays', JSON.stringify(essays));
             
             updateStatus('✓ Essay saved successfully!', 'status-success');
+            return true;
         }
         
         // Reset interface
         function resetInterface() {
-            clearInterval(countdown);
+            if (countdown) {
+                clearInterval(countdown);
+            }
             timerDisplay.textContent = "00:00";
             timerDisplay.style.color = '#2563eb';
             essayTextarea.value = "";
@@ -366,17 +373,22 @@
             updateWordCounter();
         }
         
-        // Submit button handler
+        // Submit button handler - FIXED VERSION
         submitBtn.addEventListener('click', () => {
-            if (wordCount.textContent < 250) {
-                if(!confirm(`Your essay is only ${wordCount.textContent} words (minimum 250). Submit anyway?`)) {
-                    return;
-                }
+            // Get current word count as number
+            const currentWordCount = parseInt(wordCount.textContent, 10);
+            
+            if (currentWordCount < 250) {
+                const shouldSubmit = confirm(`Your essay is only ${currentWordCount} words (minimum 250). Submit anyway?`);
+                if (!shouldSubmit) return;
             }
             
-            saveEssay();
-            resetInterface();
-            updateStatus('Essay submitted successfully!', 'status-success');
+            if (saveEssay()) {
+                resetInterface();
+                updateStatus('Essay submitted successfully!', 'status-success');
+            } else {
+                updateStatus('Error saving essay!', 'status-error');
+            }
         });
         
         // Reset button
