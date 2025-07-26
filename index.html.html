@@ -130,5 +130,24 @@
             }
         });
     </script>
+    <script>
+// Clear clipboard on page load
+navigator.clipboard.writeText("");
+
+// Disable right-click
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Fullscreen recommendation
+if(!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(e => {});
+}
+</script>
+    <script>
+// Clear all data after 4 hours
+setTimeout(() => {
+    localStorage.clear();
+    alert("All session data has been cleared");
+}, 4 * 60 * 60 * 1000); // 4 hours
+</script>
 </body>
 </html>
