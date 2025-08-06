@@ -16,7 +16,7 @@
             margin: 0;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 40px auto;
             background: white;
             border-radius: 12px;
@@ -60,11 +60,47 @@
         }
         .controls {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
             margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 1px solid #e2e8f0;
+        }
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        select, input {
+            padding: 10px 15px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        #downloadBtn {
+            background: #10b981;
+        }
+        #downloadBtn:hover {
+            background: #059669;
+        }
+        #clearBtn {
+            background: #dc2626;
+        }
+        #clearBtn:hover {
+            background: #b91c1c;
         }
         .essay-card {
             background: white;
@@ -75,40 +111,73 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .student-name {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             color: #2563eb;
+        }
+        .candidate-id {
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 15px;
         }
         .essay-meta {
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
             margin-bottom: 15px;
             padding-bottom: 15px;
             border-bottom: 1px solid #e2e8f0;
+        }
+        .meta-item {
+            min-width: 150px;
+        }
+        .meta-item strong {
+            display: block;
+            color: #64748b;
+            font-size: 14px;
+        }
+        .meta-item span {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .time-spent {
+            color: #dc2626;
+            font-weight: 600;
         }
         .essay-content {
             white-space: pre-wrap;
             line-height: 1.8;
             font-size: 16px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
         }
         .empty-state {
             text-align: center;
             padding: 40px;
             color: #64748b;
         }
-        #downloadBtn {
-            padding: 10px 20px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
+        .student-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
         }
-        #downloadBtn:hover {
-            background: #059669;
+        .student-item {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+        .student-item:hover {
+            background: #f1f5f9;
+        }
+        .student-item.active {
+            background: #dbeafe;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -127,8 +196,24 @@
 
         <div class="dashboard" id="dashboard">
             <div class="controls">
-                <h2>Submitted Essays</h2>
-                <button id="downloadBtn">Download All Essays</button>
+                <div class="control-group">
+                    <select id="filterTask">
+                        <option value="all">All Tasks</option>
+                        <option value="Task 1">Task 1 Only</option>
+                        <option value="Task 2">Task 2 Only</option>
+                    </select>
+                    <input type="text" id="searchInput" placeholder="Search by name or ID">
+                    <button id="applyFilter">Apply Filters</button>
+                </div>
+                
+                <div class="control-group">
+                    <button id="downloadBtn">Download All Essays</button>
+                    <button id="clearBtn">Clear All Essays</button>
+                </div>
+            </div>
+            
+            <div class="student-list" id="studentList">
+                <!-- Student list will appear here -->
             </div>
             
             <div id="essaysContainer">
@@ -141,13 +226,26 @@
     </div>
 
     <script>
-        // Password protection
-        const CORRECT_PASSWORD = "IELTS2024"; // CHANGE THIS TO YOUR PASSWORD
+        // Password protection (CHANGE THIS TO YOUR PASSWORD)
+        const CORRECT_PASSWORD = "Maminruzma2003";
         const passwordScreen = document.getElementById('passwordScreen');
         const dashboard = document.getElementById('dashboard');
         const loginBtn = document.getElementById('loginBtn');
         const downloadBtn = document.getElementById('downloadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const applyFilter = document.getElementById('applyFilter');
+        const filterTask = document.getElementById('filterTask');
+        const searchInput = document.getElementById('searchInput');
         const essaysContainer = document.getElementById('essaysContainer');
+        const studentList = document.getElementById('studentList');
+        
+        // Cloud storage URL (REPLACE WITH YOUR GOOGLE SHEET JSON URL)
+        const SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzue4cJ2F5ugR7c7kmH4umv8_gL7dS_ifqpASgOKBBD0yG4ecZ0Qod5RecnVlyRzhEHk_v3JfEjpGU/pub?output=json";
+        
+        // Global variables
+        let allEssays = [];
+        let filteredEssays = [];
+        let activeStudentId = null;
         
         loginBtn.addEventListener('click', () => {
             const password = document.getElementById('passwordInput').value;
@@ -160,16 +258,133 @@
             }
         });
         
-        // Load saved essays from localStorage
-        function loadEssays() {
-            // Get essays from localStorage or initialize empty array
-            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
+        // Load essays from cloud
+        async function loadFromCloud() {
+            try {
+                const response = await fetch(SHEET_JSON_URL);
+                const data = await response.json();
+                
+                // Transform Google Sheets data
+                const essays = [];
+                const rows = data.values.slice(1); // Skip header row
+                
+                rows.forEach(row => {
+                    essays.push({
+                        timestamp: row[0],
+                        studentName: row[1],
+                        candidateId: row[2],
+                        taskType: row[3],
+                        words: row[4],
+                        timeSpent: row[5],
+                        content: row[6]
+                    });
+                });
+                
+                return essays;
+            } catch (error) {
+                console.error('Cloud load error:', error);
+                return [];
+            }
+        }
+        
+        // Load saved essays from localStorage and cloud
+        async function loadEssays() {
+            // Load from cloud
+            const cloudEssays = await loadFromCloud();
             
-            if (essays.length === 0) {
+            // Load from local storage (fallback)
+            const localEssays = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('ielts_')) {
+                    const studentEssays = JSON.parse(localStorage.getItem(key));
+                    localEssays.push(...studentEssays);
+                }
+            }
+            
+            // Combine both sources
+            allEssays = [...cloudEssays, ...localEssays];
+            
+            // Generate unique student list
+            const students = {};
+            allEssays.forEach(essay => {
+                const key = essay.candidateId || essay.studentName;
+                if (!students[key]) {
+                    students[key] = {
+                        name: essay.studentName,
+                        id: essay.candidateId,
+                        count: 0
+                    };
+                }
+                students[key].count++;
+            });
+            
+            // Display student list
+            studentList.innerHTML = '';
+            Object.values(students).forEach(student => {
+                const studentElement = document.createElement('div');
+                studentElement.className = 'student-item';
+                studentElement.innerHTML = `
+                    <div class="student-name">${student.name}</div>
+                    <div class="candidate-id">ID: ${student.id} (${student.count} essays)</div>
+                `;
+                
+                studentElement.addEventListener('click', () => {
+                    // Highlight active student
+                    document.querySelectorAll('.student-item').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    studentElement.classList.add('active');
+                    
+                    // Filter essays for this student
+                    activeStudentId = student.id;
+                    filterEssays();
+                });
+                
+                studentList.appendChild(studentElement);
+            });
+            
+            filterEssays();
+        }
+        
+        // Filter essays based on active filters
+        function filterEssays() {
+            filteredEssays = [...allEssays];
+            
+            // Apply student filter
+            if (activeStudentId) {
+                filteredEssays = filteredEssays.filter(essay => 
+                    essay.candidateId === activeStudentId
+                );
+            }
+            
+            // Apply task filter
+            const taskFilter = filterTask.value;
+            if (taskFilter !== 'all') {
+                filteredEssays = filteredEssays.filter(essay => 
+                    essay.taskType === taskFilter
+                );
+            }
+            
+            // Apply search filter
+            const searchTerm = searchInput.value.toLowerCase();
+            if (searchTerm) {
+                filteredEssays = filteredEssays.filter(essay => 
+                    essay.studentName.toLowerCase().includes(searchTerm) || 
+                    (essay.candidateId && essay.candidateId.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            displayEssays();
+        }
+        
+        // Display filtered essays
+        function displayEssays() {
+            if (filteredEssays.length === 0) {
                 essaysContainer.innerHTML = `
                     <div class="empty-state">
-                        <h3>No essays submitted yet</h3>
-                        <p>Student essays will appear here once submitted</p>
+                        <h3>No essays match your filters</h3>
+                        <p>Try changing your search criteria</p>
                     </div>
                 `;
                 return;
@@ -179,16 +394,37 @@
             essaysContainer.innerHTML = '';
             
             // Display each essay
-            essays.forEach(essay => {
+            filteredEssays.forEach(essay => {
+                // Format time spent
+                const minutes = Math.floor(essay.timeSpent / 60);
+                const seconds = essay.timeSpent % 60;
+                const timeSpent = `${minutes} min ${seconds} sec`;
+                
                 const essayElement = document.createElement('div');
                 essayElement.className = 'essay-card';
                 essayElement.innerHTML = `
-                    <div class="student-name">${essay.studentName || 'Anonymous'}</div>
+                    <div class="student-name">${essay.studentName}</div>
+                    <div class="candidate-id">Candidate ID: ${essay.candidateId}</div>
+                    
                     <div class="essay-meta">
-                        <div><strong>Task:</strong> ${essay.taskType}</div>
-                        <div><strong>Date:</strong> ${new Date(essay.timestamp).toLocaleString()}</div>
-                        <div><strong>Words:</strong> ${essay.words}</div>
+                        <div class="meta-item">
+                            <strong>Task Type</strong>
+                            <span>${essay.taskType}</span>
+                        </div>
+                        <div class="meta-item">
+                            <strong>Date Submitted</strong>
+                            <span>${essay.timestamp}</span>
+                        </div>
+                        <div class="meta-item">
+                            <strong>Word Count</strong>
+                            <span>${essay.words}</span>
+                        </div>
+                        <div class="meta-item">
+                            <strong>Time Spent</strong>
+                            <span class="time-spent">${timeSpent}</span>
+                        </div>
                     </div>
+                    
                     <div class="essay-content">${essay.content}</div>
                 `;
                 essaysContainer.appendChild(essayElement);
@@ -197,22 +433,26 @@
         
         // Download essays as text file
         downloadBtn.addEventListener('click', () => {
-            // Get essays from localStorage
-            const essays = JSON.parse(localStorage.getItem('ieltsEssays') || []);
-            
-            if (essays.length === 0) {
+            if (filteredEssays.length === 0) {
                 alert("No essays to download!");
                 return;
             }
             
             let content = "IELTS Essay Submissions\n\n";
             
-            essays.forEach((essay, index) => {
+            filteredEssays.forEach((essay, index) => {
+                // Format time spent
+                const minutes = Math.floor(essay.timeSpent / 60);
+                const seconds = essay.timeSpent % 60;
+                const timeSpent = `${minutes} min ${seconds} sec`;
+                
                 content += `Essay #${index + 1}\n`;
-                content += `Student: ${essay.studentName || 'Anonymous'}\n`;
+                content += `Student: ${essay.studentName}\n`;
+                content += `Candidate ID: ${essay.candidateId}\n`;
                 content += `Task: ${essay.taskType}\n`;
-                content += `Date: ${new Date(essay.timestamp).toLocaleString()}\n`;
-                content += `Word Count: ${essay.words}\n\n`;
+                content += `Date: ${essay.timestamp}\n`;
+                content += `Word Count: ${essay.words}\n`;
+                content += `Time Spent: ${timeSpent}\n\n`;
                 content += `${essay.content}\n\n`;
                 content += "--------------------------------\n\n";
             });
@@ -227,6 +467,23 @@
             a.click();
             document.body.removeChild(a);
         });
+        
+        // Clear all essays
+        clearBtn.addEventListener('click', () => {
+            if (confirm("Are you sure you want to delete ALL essays? This cannot be undone.")) {
+                localStorage.clear();
+                allEssays = [];
+                filteredEssays = [];
+                displayEssays();
+                studentList.innerHTML = '';
+                
+                alert("All essays have been cleared!");
+            }
+        });
+        
+        // Apply filters
+        applyFilter.addEventListener('click', filterEssays);
+        searchInput.addEventListener('keyup', filterEssays);
     </script>
 </body>
 </html>
