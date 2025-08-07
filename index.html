@@ -297,8 +297,8 @@
         let minWords = 0;
         let startTime = 0;
         
-        // Cloud storage URL (REPLACE WITH YOUR GOOGLE SCRIPT URL)
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbxhTx7S0QMBJsTWGXsD3HD3A5vxYhg6ZhC7mFGnDA4yV9KqG5faKN1R_M9k-nO70IqtHQ/exec";
+        // Cloud storage URL
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbyzl62w8jLPQu8Z9QiAOAT1nhO36Zys0WIfViuJrHq44pzSN2SNQ9Wi4yHJyLOudc-ytg/exec";
         
         // Anti-cheating: Disable paste
         function disablePaste(element) {
@@ -475,10 +475,16 @@
                     }
                 });
                 
-                const result = await response.json();
-                return result.success;
+                // Handle Google Script response
+                const result = await response.text();
+                if (result.includes("Exception") || result.includes("error")) {
+                    throw new Error("Google Script Error: " + result);
+                }
+                
+                return true;
             } catch (error) {
                 console.error('Cloud save error:', error);
+                updateStatus(`Error: ${error.message}`, 'status-error');
                 return false;
             }
         }
