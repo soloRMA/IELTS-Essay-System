@@ -298,7 +298,7 @@
         let startTime = 0;
         
         // Cloud storage URL
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbymxr0Mr5VmAgjCoJnf6OS5ZxRLm4qPl5zavaMU1EGx2ULgDi9BCRRljuYVGmp5ZArLFg/exec";
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbzJC6GYKaAQ8R-56JzyQN8d9fI8UwZS8TnWhH-aJBQKf30e18s01K3xjhvnY7lWHZX3Ow/exec";
         
         // Anti-cheating: Disable paste
         function disablePaste(element) {
@@ -467,26 +467,36 @@
         // Save essay to cloud
         async function saveToCloud(essayData) {
   try {
-    // Use a CORS proxy to bypass restrictions
-    const PROXY_URL = "https://corsproxy.io/?"; // Reliable CORS proxy
-    const response = await fetch(PROXY_URL + encodeURIComponent(CLOUD_URL), {
+    // Create unique URL to prevent caching
+    const timestamp = new Date().getTime();
+    const uniqueUrl = CLOUD_URL + "?cache=" + timestamp;
+    
+    const response = await fetch(uniqueUrl, {
       method: 'POST',
       body: JSON.stringify(essayData),
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/text' // Use text instead of JSON
       }
     });
     
-    // Handle response
-    const result = await response.json();
-    if (result.success) {
+    const result = await response.text();
+    
+    if (result === "OK") {
       return true;
     }
-    throw new Error(result.error || "Google Script returned error");
+    
+    throw new Error(result);
     
   } catch (error) {
     console.error('Cloud save error:', error);
-    updateStatus(`Error: ${error.message}`, 'status-error');
+    
+    // Handle common errors
+    if (error.message.includes("ERROR")) {
+      updateStatus(`Google Script Error: ${error.message}`, 'status-error');
+    } else {
+      updateStatus(`Network Error: ${error.message}`, 'status-error');
+    }
+    
     return false;
   }
 }
