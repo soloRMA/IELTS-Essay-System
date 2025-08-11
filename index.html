@@ -298,7 +298,7 @@
         let startTime = 0;
         
         // Cloud storage URL
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycby3rUFrLILGi6UH6A83uFyE8C7GzxOyEk47ZPfr7-VDw71ccTGFa1zxyQV4rBS0nJQ1Dw/exec"; // Replace with your Google Apps Script Web App URL
+        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwqTOXI2yS09AM0ZaY1CedDPeKdXCrZL3013rAmY1k8bKtQXkWvLSN1vgJP6zFhDu3x-w/exec"; // Replace with your Google Apps Script Web App URL
         
         // Anti-cheating: Disable paste
         function disablePaste(element) {
@@ -466,19 +466,35 @@
         
         // Save essay to cloud
         // Save essay to cloud
-        async function saveToCloud(essayData) {
-            try {
-                // Create unique URL to prevent caching
-                const timestamp = new Date().getTime();
-                const uniqueUrl = CLOUD_URL + "?cache=" + timestamp;
+        // Save essay to cloud (preflight-free version)
+async function saveToCloud(essayData) {
+    try {
+        // Create unique URL to prevent caching
+        const timestamp = new Date().getTime();
+        const uniqueUrl = CLOUD_URL + "?cache=" + timestamp;
 
-                const response = await fetch(uniqueUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(essayData),
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+        const response = await fetch(uniqueUrl, {
+            method: 'POST',
+            body: JSON.stringify(essayData), // still JSON, but sent as plain text
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        });
+
+        const result = await response.text();
+
+        if (result.trim() === "OK") {
+            return true;
+        }
+
+        throw new Error(result);
+
+    } catch (error) {
+        console.error('Cloud save error:', error);
+        updateStatus(`Network Error: ${error.message}`, 'status-error');
+        return false;
+    }
+});
 
                 const result = await response.text();
 

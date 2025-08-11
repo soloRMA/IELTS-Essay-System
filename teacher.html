@@ -240,7 +240,7 @@
         const studentList = document.getElementById('studentList');
         
         // Cloud storage URL
-        const SHEET_JSON_URL = "https://script.google.com/macros/s/AKfycby3rUFrLILGi6UH6A83uFyE8C7GzxOyEk47ZPfr7-VDw71ccTGFa1zxyQV4rBS0nJQ1Dw/exec"; // Replace with your Google Apps Script Web App URL (same as in index.html)
+        const SHEET_JSON_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSzue4cJ2F5ugR7c7kmH4umv8_gL7dS_ifqpASgOKBBD0yG4ecZ0Qod5RecnVlyRzhEHk_v3JfEjpGU/pub?output=json";
         
         // Global variables
         let allEssays = [];
@@ -259,21 +259,24 @@
         });
         
         // Load essays from cloud
-        
-        // Load essays from cloud (via Google Apps Script)
-        async function loadFromCloud() {
-            try {
-                const response = await fetch(SHEET_JSON_URL);
-                const essays = await response.json();
+        // Load essays from cloud (preflight-free version)
+async function loadFromCloud() {
+    try {
+        const timestamp = new Date().getTime();
+        const uniqueUrl = SHEET_JSON_URL + "?cache=" + timestamp;
 
-                // Expecting essays to be an array of objects
-                return essays;
+        const response = await fetch(uniqueUrl, { method: 'GET' });
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-            } catch (error) {
-                console.error('Cloud load error:', error);
-                return [];
-            }
-        }
+        const data = await response.json();
+        return data;
+
+    } catch (error) {
+        console.error('Cloud load error:', error);
+        alert(`Network Error: ${error.message}`);
+        return [];
+    }
+}
         
         // Load saved essays from localStorage and cloud
         async function loadEssays() {
