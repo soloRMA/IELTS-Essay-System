@@ -103,7 +103,7 @@
     const minWords = document.getElementById('minWords');
     const maxWords = document.getElementById('maxWords');
     
-    const SHEET_JSON_URL = "https://script.google.com/macros/s/AKfycbyEeMRl0peYIXt31ZMPQ56bgvp-U1trNCJ1qFO14BTMB9igfGYij9l2L8AJY-PtE9sR-Q/exec";
+    const SHEET_JSON_URL = "https://script.google.com/macros/s/AKfycbxubV3jzw2TgvH8v9dpk9ZQxDjmFWlX36af7CtkzLu032gjtmgIOW8AqDeUKI1t0cf2wA/exec";
     
     let allEssays = [];
     let filteredEssays = [];
@@ -120,19 +120,36 @@
       }
     });
 
-    async function loadFromCloud() {
-      try {
-        const timestamp = new Date().getTime();
-        const uniqueUrl = SHEET_JSON_URL + "?cache=" + timestamp;
-        const response = await fetch(uniqueUrl, { method: 'GET' });
-        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-        return await response.json();
-      } catch (error) {
-        console.error('Cloud load error:', error);
-        alert(`Network Error: ${error.message}`);
-        return [];
-      }
+   async function loadFromCloud() {
+  try {
+    const timestamp = new Date().getTime();
+    const uniqueUrl = SHEET_JSON_URL + "?cache=" + timestamp;
+
+    console.log("Fetching essays from:", uniqueUrl);
+    const response = await fetch(uniqueUrl, { method: 'GET' });
+
+    const text = await response.text();
+    console.log("Raw response text:", text);
+
+    // Try parse JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      throw new Error("Invalid JSON from server. Response: " + text);
     }
+
+    // Server-side error?
+    if (data && data.error) throw new Error("Server error: " + data.error);
+
+    return data; // should be an array of essays
+  } catch (error) {
+    console.error('Cloud load error:', error);
+    alert(`Cloud load error: ${error.message}. Check console (F12) for full details.`);
+    return [];
+  }
+}
+
     
     async function loadEssays() {
       const cloudEssays = await loadFromCloud();
