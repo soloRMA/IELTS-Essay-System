@@ -1,246 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IELTS Essay Submission</title>
-    <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        body { background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%); min-height: 100vh; padding: 20px; margin: 0; }
-        .container { max-width: 800px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); overflow: hidden; }
-        header { background: #2563eb; color: white; padding: 25px 40px; }
-        h1 { margin: 0; font-weight: 600; }
-        .instructions { background: #dbeafe; padding: 20px 40px; border-bottom: 1px solid #bfdbfe; }
-        .form-group { padding: 30px 40px; }
-        label { display: block; margin-bottom: 12px; font-weight: 500; color: #1e293b; }
-        #essay { width: 100%; height: 300px; padding: 15px; border: 2px solid #cbd5e1; border-radius: 8px; resize: vertical; font-size: 16px; line-height: 1.6; }
-        #essay:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
-        .student-info { margin-bottom: 20px; }
-        .student-info input { width: 100%; padding: 12px 15px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; margin-top: 5px; }
-        .student-info input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
-        .timer-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .timer { font-size: 24px; font-weight: bold; color: #2563eb; background: #dbeafe; padding: 8px 15px; border-radius: 6px; min-width: 100px; text-align: center; }
-        .task-info { font-weight: 600; color: #2563eb; text-align: center; margin-bottom: 15px; font-size: 18px; }
-        .word-counter { text-align: right; margin-top: 8px; color: #64748b; font-size: 14px; }
-        .counter-warning { color: #dc2626; font-weight: 500; }
-        .btn-group { display: flex; gap: 15px; margin-top: 25px; }
-        button { flex: 1; padding: 14px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        #submitBtn { background: #2563eb; color: white; }
-        #submitBtn:hover { background: #1d4ed8; }
-        #submitBtn:disabled { background: #cbd5e1; cursor: not-allowed; }
-        #resetBtn { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
-        #resetBtn:hover { background: #e2e8f0; }
-        footer { text-align: center; padding: 20px; color: #64748b; font-size: 14px; border-top: 1px solid #e2e8f0; }
-        .security-notice { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 10px; }
-        .status-message { text-align: center; padding: 10px; margin: 10px 0; border-radius: 6px; font-weight: 500; }
-        .status-warning { background: #fef3c7; color: #d97706; }
-        .status-success { background: #d1fae5; color: #059669; }
-        .status-error { background: #fee2e2; color: #dc2626; }
-        #fullscreenWarning { background: #fffbeb; border: 1px solid #fcd34d; padding: 10px; border-radius: 8px; margin: 10px 0; display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IELTS Essay Submission</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%); min-height: 100vh; padding: 20px; margin: 0; }
+    .container { max-width: 800px; margin: 40px auto; background: white; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); overflow: hidden; }
+    header { background: #2563eb; color: white; padding: 25px 40px; }
+    h1 { margin: 0; font-weight: 600; }
+    .instructions { background: #dbeafe; padding: 20px 40px; border-bottom: 1px solid #bfdbfe; }
+    .form-group { padding: 30px 40px; }
+    label { display: block; margin-bottom: 12px; font-weight: 500; color: #1e293b; }
+    #essay { width: 100%; height: 300px; padding: 15px; border: 2px solid #cbd5e1; border-radius: 8px; resize: vertical; font-size: 16px; line-height: 1.6; }
+    #essay:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+    .student-info { margin-bottom: 20px; }
+    .student-info input { width: 100%; padding: 12px 15px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; margin-top: 5px; }
+    .student-info input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+    .timer-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .timer { font-size: 24px; font-weight: bold; color: #2563eb; background: #dbeafe; padding: 8px 15px; border-radius: 6px; min-width: 100px; text-align: center; }
+    .task-info { font-weight: 600; color: #2563eb; text-align: center; margin-bottom: 15px; font-size: 18px; }
+    .word-counter { text-align: right; margin-top: 8px; color: #64748b; font-size: 14px; }
+    .counter-warning { color: #dc2626; font-weight: 500; }
+    .btn-group { display: flex; gap: 15px; margin-top: 25px; }
+    button { flex: 1; padding: 14px 20px; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    #submitBtn { background: #2563eb; color: white; }
+    #submitBtn:hover { background: #1d4ed8; }
+    #submitBtn:disabled { background: #cbd5e1; cursor: not-allowed; }
+    #resetBtn { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
+    #resetBtn:hover { background: #e2e8f0; }
+    footer { text-align: center; padding: 20px; color: #64748b; font-size: 14px; border-top: 1px solid #e2e8f0; }
+    .security-notice { display: flex; align-items: center; gap: 8px; justify-content: center; margin-top: 10px; }
+    .status-message { text-align: center; padding: 10px; margin: 10px 0; border-radius: 6px; font-weight: 500; }
+    .status-warning { background: #fef3c7; color: #d97706; }
+    .status-success { background: #d1fae5; color: #059669; }
+    .status-error { background: #fee2e2; color: #dc2626; }
+    #fullscreenWarning { background: #fffbeb; border: 1px solid #fcd34d; padding: 10px; border-radius: 8px; margin: 10px 0; display: none; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header><h1>IELTS Essay Submission</h1></header>
-        <div class="instructions">
-            <ul>
-                <li>Full-screen mode is required to prevent cheating</li>
-                <li>Your work will be erased if you leave this page</li>
-                <li>Word count: Task 1 (≥150 words), Task 2 (≥250 words)</li>
-                <li>Copy-paste is disabled to ensure original work</li>
-            </ul>
-        </div>
-        <div class="form-group">
-            <div id="fullscreenWarning">⚠️ Full-screen mode is required! Please enable when prompted.</div>
-            <div class="student-info">
-                <label for="studentName">Your Full Name:</label>
-                <input type="text" id="studentName" placeholder="Enter your full name" spellcheck="false">
-            </div>
-            <div class="student-info">
-                <label for="candidateId">Candidate ID:</label>
-                <input type="text" id="candidateId" placeholder="Enter your unique candidate ID" spellcheck="false">
-            </div>
-            <div class="task-info" id="taskInfo">Select task below</div>
-            <div class="btn-group" id="taskButtons">
-                <button id="task1Btn">Task 1 (20 min)</button>
-                <button id="task2Btn">Task 2 (40 min)</button>
-            </div>
-            <div class="timer-container"><div class="timer" id="timer">00:00</div></div>
-            <label for="essay">Write your essay below:</label>
-            <textarea id="essay" placeholder="Type your IELTS essay here..." spellcheck="false" disabled></textarea>
-            <div class="word-counter">Words: <span id="count">0</span></div>
-            <div class="status-message status-warning" id="statusMessage">Enter your details and select a task to begin</div>
-            <div class="btn-group">
-                <button id="resetBtn">Clear Essay</button>
-                <button id="submitBtn" disabled>Submit Essay</button>
-            </div>
-        </div>
-        <footer>
-            <p>Secure Essay Submission System</p>
-            <div class="security-notice">🔒 Anti-cheating protection enabled</div>
-        </footer>
+  <div class="container">
+    <header><h1>IELTS Essay Submission</h1></header>
+    <div class="instructions">
+      <ul>
+        <li>Full-screen mode is required to prevent cheating</li>
+        <li>Your work will be erased if you leave this page</li>
+        <li>Word count: Task 1 (≥150 words), Task 2 (≥250 words)</li>
+        <li>Copy-paste is disabled to ensure original work</li>
+      </ul>
     </div>
+    <div class="form-group">
+      <div id="fullscreenWarning">⚠️ Full-screen mode is required! Please enable when prompted.</div>
+      <div class="student-info">
+        <label for="studentName">Your Full Name:</label>
+        <input type="text" id="studentName" placeholder="Enter your full name" spellcheck="false">
+      </div>
+      <div class="student-info">
+        <label for="candidateId">Candidate ID:</label>
+        <input type="text" id="candidateId" placeholder="Enter your unique candidate ID" spellcheck="false">
+      </div>
+      <div class="task-info" id="taskInfo">Select task below</div>
+      <div class="btn-group" id="taskButtons">
+        <button id="task1Btn">Task 1 (20 min)</button>
+        <button id="task2Btn">Task 2 (40 min)</button>
+        <button id="freeBtn">Free Writing (Stopwatch)</button>
+      </div>
+      <div class="timer-container"><div class="timer" id="timer">00:00</div></div>
+      <label for="essay">Write your essay below:</label>
+      <textarea id="essay" placeholder="Type your IELTS essay here..." spellcheck="false" disabled></textarea>
+      <div class="word-counter">Words: <span id="count">0</span></div>
+      <div class="status-message status-warning" id="statusMessage">Enter your details and select a task to begin</div>
+      <div class="btn-group">
+        <button id="resetBtn">Clear Essay</button>
+        <button id="submitBtn" disabled>Submit Essay</button>
+      </div>
+    </div>
+    <footer>
+      <p>Secure Essay Submission System</p>
+      <div class="security-notice">🔒 Anti-cheating protection enabled</div>
+    </footer>
+  </div>
 
-    <script>
-        const task1Btn = document.getElementById('task1Btn');
-        const task2Btn = document.getElementById('task2Btn');
-        const taskButtons = document.getElementById('taskButtons');
-        const taskInfo = document.getElementById('taskInfo');
-        const timerDisplay = document.getElementById('timer');
-        const essayTextarea = document.getElementById('essay');
-        const wordCount = document.getElementById('count');
-        const resetBtn = document.getElementById('resetBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const statusMessage = document.getElementById('statusMessage');
-        const studentNameInput = document.getElementById('studentName');
-        const candidateIdInput = document.getElementById('candidateId');
-        const fullscreenWarning = document.getElementById('fullscreenWarning');
-        
-        let countdown, secondsRemaining, taskActive = false, taskType = "", minWords = 0, startTime = 0;
-        const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwz1aFPQDBLftPlNjOetWGAUynisAUpE_WIaAAtpq-Kn20sG8NCjXobZpbpP-DoLykYDA/exec";
+  <script>
+    const task1Btn = document.getElementById('task1Btn');
+    const task2Btn = document.getElementById('task2Btn');
+    const freeBtn = document.getElementById('freeBtn');
+    const taskButtons = document.getElementById('taskButtons');
+    const taskInfo = document.getElementById('taskInfo');
+    const timerDisplay = document.getElementById('timer');
+    const essayTextarea = document.getElementById('essay');
+    const wordCount = document.getElementById('count');
+    const resetBtn = document.getElementById('resetBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    const studentNameInput = document.getElementById('studentName');
+    const candidateIdInput = document.getElementById('candidateId');
+    const fullscreenWarning = document.getElementById('fullscreenWarning');
+    
+    let countdown, secondsRemaining, taskActive = false, taskType = "", minWords = 0, startTime = 0;
+    const CLOUD_URL = "https://script.google.com/macros/s/AKfycbwz1aFPQDBLftPlNjOetWGAUynisAUpE_WIaAAtpq-Kn20sG8NCjXobZpbpP-DoLykYDA/exec";
 
-        function disablePaste(element) {
-            element.addEventListener('paste', e => {
-                e.preventDefault();
-                updateStatus("⚠️ Paste function disabled to prevent cheating", 'status-warning');
-            });
+    function disablePaste(element) {
+      element.addEventListener('paste', e => {
+        e.preventDefault();
+        updateStatus("⚠️ Paste function disabled to prevent cheating", 'status-warning');
+      });
+    }
+    disablePaste(studentNameInput);
+    disablePaste(candidateIdInput);
+    disablePaste(essayTextarea);
+
+    function enterFullscreen() {
+      if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+      else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+    }
+
+    document.addEventListener('fullscreenchange', exitHandler);
+    function exitHandler() {
+      if (!document.fullscreenElement && taskActive) {
+        alert("Full-screen mode is required! Returning to full-screen.");
+        enterFullscreen();
+      }
+    }
+
+    task1Btn.addEventListener('click', () => startTask(20*60, "Task 1", 150));
+    task2Btn.addEventListener('click', () => startTask(40*60, "Task 2", 250));
+    freeBtn.addEventListener('click', () => startFreeWriting());
+
+    function startTask(seconds, type, min) {
+      if (!studentNameInput.value.trim() || !candidateIdInput.value.trim()) {
+        updateStatus("⚠️ Please enter your name and candidate ID", 'status-warning');
+        return;
+      }
+      enterFullscreen();
+      if (countdown) clearInterval(countdown);
+      taskType = type; minWords = min; startTime = Date.now();
+      taskButtons.style.display = 'none';
+      taskInfo.textContent = `${type} in progress - Timer running`;
+      resetInterface();
+      secondsRemaining = seconds; taskActive = true;
+      essayTextarea.disabled = false; submitBtn.disabled = false;
+      essayTextarea.value = ''; essayTextarea.focus();
+      updateWordCounter();
+      countdown = setInterval(() => {
+        secondsRemaining--;
+        const m = Math.floor(secondsRemaining / 60), s = secondsRemaining % 60;
+        timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        if (m < 2) { timerDisplay.style.color = '#dc2626'; }
+        if (secondsRemaining <= 0) {
+          clearInterval(countdown);
+          saveEssay();
+          alert("Time's up! Essay submitted.");
+          resetInterface(); taskButtons.style.display = 'flex'; taskInfo.textContent = 'Select task below';
         }
-        disablePaste(studentNameInput);
-        disablePaste(candidateIdInput);
-        disablePaste(essayTextarea);
+      }, 1000);
+    }
 
-        function enterFullscreen() {
-            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
-            else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
-        }
+    // Stopwatch mode
+    function startFreeWriting() {
+      if (!studentNameInput.value.trim() || !candidateIdInput.value.trim()) {
+        updateStatus("⚠️ Please enter your name and candidate ID", 'status-warning');
+        return;
+      }
+      enterFullscreen();
+      if (countdown) clearInterval(countdown);
+      taskType = "Free Writing"; minWords = 0; startTime = Date.now();
+      taskButtons.style.display = 'none';
+      taskInfo.textContent = `Free Writing in progress - Stopwatch running`;
+      resetInterface();
+      essayTextarea.disabled = false; submitBtn.disabled = false;
+      essayTextarea.value = ''; essayTextarea.focus();
+      updateWordCounter();
+      let elapsed = 0;
+      countdown = setInterval(() => {
+        elapsed++;
+        const m = Math.floor(elapsed / 60), s = elapsed % 60;
+        timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      }, 1000);
+    }
 
-        document.addEventListener('fullscreenchange', exitHandler);
-        function exitHandler() {
-            if (!document.fullscreenElement && taskActive) {
-                alert("Full-screen mode is required! Returning to full-screen.");
-                enterFullscreen();
-            }
-        }
+    function updateStatus(message, className) {
+      statusMessage.textContent = message;
+      statusMessage.className = 'status-message ' + className;
+    }
 
-        task1Btn.addEventListener('click', () => startTask(20*60, "Task 1", 150));
-        task2Btn.addEventListener('click', () => startTask(40*60, "Task 2", 250));
+    function updateWordCounter() {
+      const text = essayTextarea.value.trim();
+      const count = text === '' ? 0 : text.split(/\s+/).length;
+      wordCount.textContent = count;
+      if(count > 0 && count < minWords) {
+        wordCount.classList.add('counter-warning');
+        updateStatus(`⚠️ Minimum ${minWords} words required (currently ${count} words)`, 'status-warning');
+      } else {
+        wordCount.classList.remove('counter-warning');
+        if (count >= minWords) updateStatus(`✓ Word count: ${count} (minimum reached)`, 'status-success');
+      }
+    }
 
-        function startTask(seconds, type, min) {
-            if (!studentNameInput.value.trim() || !candidateIdInput.value.trim()) {
-                updateStatus("⚠️ Please enter your name and candidate ID", 'status-warning');
-                return;
-            }
-            enterFullscreen();
-            if (countdown) clearInterval(countdown);
-            taskType = type; minWords = min; startTime = Date.now();
-            taskButtons.style.display = 'none';
-            taskInfo.textContent = `${type} in progress - Timer running`;
-            resetInterface();
-            secondsRemaining = seconds; taskActive = true;
-            essayTextarea.disabled = false; submitBtn.disabled = false;
-            essayTextarea.value = ''; essayTextarea.focus();
-            updateWordCounter();
-            countdown = setInterval(() => {
-                secondsRemaining--;
-                const m = Math.floor(secondsRemaining / 60), s = secondsRemaining % 60;
-                timerDisplay.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                if (m < 2) { timerDisplay.style.color = '#dc2626'; }
-                if (secondsRemaining <= 0) {
-                    clearInterval(countdown);
-                    saveEssay();
-                    alert("Time's up! Essay submitted.");
-                    resetInterface(); taskButtons.style.display = 'flex'; taskInfo.textContent = 'Select task below';
-                }
-            }, 1000);
-        }
+    function resetEssay() {
+      if(confirm('Are you sure you want to clear your essay?')) {
+        essayTextarea.value = ''; updateWordCounter();
+      }
+    }
 
-        function updateStatus(message, className) {
-            statusMessage.textContent = message;
-            statusMessage.className = 'status-message ' + className;
-        }
-
-        function updateWordCounter() {
-            const text = essayTextarea.value.trim();
-            const count = text === '' ? 0 : text.split(/\s+/).length;
-            wordCount.textContent = count;
-            if(count > 0 && count < minWords) {
-                wordCount.classList.add('counter-warning');
-                updateStatus(`⚠️ Minimum ${minWords} words required (currently ${count} words)`, 'status-warning');
-            } else {
-                wordCount.classList.remove('counter-warning');
-                if (count >= minWords) updateStatus(`✓ Word count: ${count} (minimum reached)`, 'status-success');
-            }
-        }
-
-        function resetEssay() {
-            if(confirm('Are you sure you want to clear your essay?')) {
-                essayTextarea.value = ''; updateWordCounter();
-            }
-        }
-
-        // ✅ Fixed preflight-free version
-        async function saveToCloud(essayData) {
-            try {
-                const timestamp = new Date().getTime();
-                const uniqueUrl = CLOUD_URL + "?cache=" + timestamp;
-                const response = await fetch(uniqueUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(essayData),
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-                const result = await response.text();
-                if (result.trim() === "OK") return true;
-                throw new Error(result);
-            } catch (error) {
-                console.error('Cloud save error:', error);
-                updateStatus(`Network Error: ${error.message}`, 'status-error');
-                return false;
-            }
-        }
-
-        async function saveEssay() {
-            const timeSpent = Math.round((Date.now() - startTime) / 1000);
-            const essayData = {
-                studentName: studentNameInput.value.trim(),
-                candidateId: candidateIdInput.value.trim(),
-                content: essayTextarea.value,
-                words: wordCount.textContent,
-                taskType: taskType,
-                timeSpent: timeSpent
-            };
-            const cloudSuccess = await saveToCloud(essayData);
-            if (cloudSuccess) updateStatus('✓ Essay saved to cloud!', 'status-success');
-            return true;
-        }
-
-        function resetInterface() {
-            if (countdown) clearInterval(countdown);
-            timerDisplay.textContent = "00:00"; timerDisplay.style.color = '#2563eb';
-            essayTextarea.value = ""; essayTextarea.disabled = true; submitBtn.disabled = true;
-            updateWordCounter();
-        }
-
-        submitBtn.addEventListener('click', async () => {
-            if (!studentNameInput.value.trim() || !candidateIdInput.value.trim()) {
-                updateStatus("⚠️ Please enter your name and candidate ID", 'status-warning');
-                return;
-            }
-            const currentWordCount = parseInt(wordCount.textContent, 10);
-            if (currentWordCount < minWords && !confirm(`Your essay is only ${currentWordCount} words. Submit anyway?`)) return;
-            if (await saveEssay()) {
-                resetInterface(); taskButtons.style.display = 'flex'; taskInfo.textContent = 'Select task below';
-                updateStatus('Essay submitted successfully!', 'status-success');
-            }
+    async function saveToCloud(essayData) {
+      try {
+        const timestamp = new Date().getTime();
+        const uniqueUrl = CLOUD_URL + "?cache=" + timestamp;
+        const response = await fetch(uniqueUrl, {
+          method: 'POST',
+          body: JSON.stringify(essayData),
+          headers: { 'Content-Type': 'text/plain' }
         });
+        const result = await response.text();
+        if (result.trim() === "OK") return true;
+        throw new Error(result);
+      } catch (error) {
+        console.error('Cloud save error:', error);
+        updateStatus(`Network Error: ${error.message}`, 'status-error');
+        return false;
+      }
+    }
 
-        resetBtn.addEventListener('click', resetEssay);
-        essayTextarea.addEventListener('input', updateWordCounter);
-        window.addEventListener('beforeunload', e => {
-            if (taskActive && essayTextarea.value.trim() !== '') {
-                e.preventDefault(); e.returnValue = '';
-            }
-        });
-        updateWordCounter();
-    </script>
+    async function saveEssay() {
+      const timeSpent = Math.round((Date.now() - startTime) / 1000);
+      const essayData = {
+        studentName: studentNameInput.value.trim(),
+        candidateId: candidateIdInput.value.trim(),
+        content: essayTextarea.value,
+        words: wordCount.textContent,
+        taskType: taskType,
+        timeSpent: timeSpent
+      };
+      const cloudSuccess = await saveToCloud(essayData);
+      if (cloudSuccess) updateStatus('✓ Essay saved to cloud!', 'status-success');
+      return true;
+    }
+
+    function resetInterface() {
+      if (countdown) clearInterval(countdown);
+      timerDisplay.textContent = "00:00"; timerDisplay.style.color = '#2563eb';
+      essayTextarea.value = ""; essayTextarea.disabled = true; submitBtn.disabled = true;
+      updateWordCounter();
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      if (!studentNameInput.value.trim() || !candidateIdInput.value.trim()) {
+        updateStatus("⚠️ Please enter your name and candidate ID", 'status-warning');
+        return;
+      }
+      const currentWordCount = parseInt(wordCount.textContent, 10);
+      if (currentWordCount < minWords && !confirm(`Your essay is only ${currentWordCount} words. Submit anyway?`)) return;
+      if (await saveEssay()) {
+        resetInterface(); taskButtons.style.display = 'flex'; taskInfo.textContent = 'Select task below';
+        updateStatus('Essay submitted successfully!', 'status-success');
+      }
+    });
+
+    resetBtn.addEventListener('click', resetEssay);
+    essayTextarea.addEventListener('input', updateWordCounter);
+    window.addEventListener('beforeunload', e => {
+      if (taskActive && essayTextarea.value.trim() !== '') {
+        e.preventDefault(); e.returnValue = '';
+      }
+    });
+    updateWordCounter();
+  </script>
 </body>
 </html>
